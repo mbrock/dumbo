@@ -92,7 +92,7 @@ defmodule Dumbo.DeviceSet do
   end
 
   def save_all(devices) do
-    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    now = DateTime.utc_now()
 
     entries =
       devices

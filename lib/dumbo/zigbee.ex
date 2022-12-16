@@ -57,6 +57,15 @@ defmodule Dumbo.Zigbee do
 
   def handle(["zigbee2mqtt", device], payload, state) do
     Dumbo.DeviceSet.put_device_state(device, payload)
+
+    node = Dumbo.Mesh.get_node_by_friendly_name!(device)
+
+    {:ok, _} =
+      Dumbo.Mesh.create_message(%{
+        node_id: node.id,
+        payload: payload
+      })
+
     {:ok, state}
   end
 

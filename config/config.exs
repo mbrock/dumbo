@@ -10,6 +10,11 @@ import Config
 config :dumbo,
   ecto_repos: [Dumbo.Repo]
 
+config :dumbo, Dumbo.Repo,
+  migration_timestamps: [
+    type: :utc_datetime_usec
+  ]
+
 # Configures the endpoint
 config :dumbo, DumboWeb.Endpoint,
   url: [host: "localhost"],

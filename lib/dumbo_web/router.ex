@@ -18,6 +18,16 @@ defmodule DumboWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/nodes", NodeLive.Index, :index
+    live "/nodes/new", NodeLive.Index, :new
+    live "/nodes/:id/edit", NodeLive.Index, :edit
+
+    live "/nodes/:id", NodeLive.Show, :show
+    live "/nodes/:id/show/edit", NodeLive.Show, :edit
+
+    live "/messages", MessageLive.Index, :index
+    live "/messages/:id", MessageLive.Show, :show
   end
 
   # Other scopes may use custom stacks.

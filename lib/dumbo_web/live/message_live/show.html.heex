@@ -1,0 +1,10 @@
+<.header>
+  Message <%= @message.id %>
+  <:subtitle>This is a message record from your database.</:subtitle>
+</.header>
+
+<.list>
+  <:item title="Payload"><%= @message.payload %></:item>
+</.list>
+
+<.back navigate={~p"/messages"}>Back to messages</.back>

@@ -19,7 +19,7 @@ defmodule Dumbo.MixProject do
   def application do
     [
       mod: {Dumbo.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -53,7 +53,8 @@ defmodule Dumbo.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:tortoise, "~> 0.10.0"},
       {:kino, "~> 0.8.0"},
-      {:timescale, "~> 0.0.1-alpha.5"}
+      {:timescale, "~> 0.0.1-alpha.5"},
+      {:ecto_psql_extras, "~> 0.6"}
     ]
   end
 

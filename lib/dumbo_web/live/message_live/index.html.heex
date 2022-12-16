@@ -1,0 +1,13 @@
+<.header>
+  Listing Messages
+</.header>
+
+<.table id="messages" rows={@messages} row_click={&JS.navigate(~p"/messages/#{&1}")}>
+  <:col :let={message} label="Node"><%= message.node.friendly_name %></:col>
+  <:col :let={message} label="Payload"><%= inspect message.payload %></:col>
+  <:action :let={message}>
+    <div class="sr-only">
+      <.link navigate={~p"/messages/#{message}"}>Show</.link>
+    </div>
+  </:action>
+</.table>

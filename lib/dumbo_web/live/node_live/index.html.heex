@@ -1,0 +1,19 @@
+<.header>
+  Listing Nodes
+  <:actions>
+    <.link patch={~p"/nodes/new"}>
+      <.button>New Node</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="nodes" rows={@nodes} row_click={&JS.navigate(~p"/nodes/#{&1}")}>
+  <:col :let={node} label="Friendly name"><%= node.friendly_name %></:col>
+  <:col :let={node} label="Ieee address"><%= node.ieee_address %></:col>
+  <:col :let={node} label="Description"><%= node.definition["description"] %></:col>
+  <:action :let={node}>
+    <div class="sr-only">
+      <.link navigate={~p"/nodes/#{node}"}>Show</.link>
+    </div>
+  </:action>
+</.table>

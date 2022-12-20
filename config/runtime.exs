@@ -1,5 +1,17 @@
 import Config
 
+defmodule Env do
+  def get(name) do
+    System.get_env(name) || raise "environment variable #{name} is missing"
+  end
+end
+
+if config_env() != :test do
+  config :dumbo,
+    telegram_token: Env.get("TELEGRAM_TOKEN"),
+    zigbee_hub: Env.get("ZIGBEE_HUB") == "true"
+end
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration

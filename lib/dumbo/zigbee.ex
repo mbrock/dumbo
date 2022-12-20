@@ -26,11 +26,12 @@ defmodule Dumbo.Zigbee do
   end
 
   def publish(topic, payload) do
-    Tortoise.publish(
-      Dumbo.Zigbee,
-      Enum.join(["zigbee2mqtt" | topic], "/"),
-      Jason.encode!(payload)
-    )
+    :ok =
+      Tortoise.publish(
+        Dumbo.Zigbee,
+        Enum.join(["zigbee2mqtt" | topic], "/"),
+        Jason.encode!(payload)
+      )
   end
 
   def request_device_rename(name, new_name) do
@@ -55,10 +56,42 @@ defmodule Dumbo.Zigbee do
     {:ok, state}
   end
 
+  def handle(["zigbee2mqtt", _device], nil, state) do
+    # we get these when a device is renamed
+    {:ok, state}
+  end
+
+  # handle the zigbee2mqtt/bridge/response/device/rename message
+  def handle(
+        ["zigbee2mqtt", "bridge", "response", "device", "rename"],
+        %{"data" => %{"from" => from, "to" => to}},
+        state
+      ) do
+    Dumbo.DeviceSet.rename(from, to)
+    {:ok, state}
+  end
+
   def handle(["zigbee2mqtt", device], payload, state) do
     Dumbo.DeviceSet.put_device_state(device, payload)
 
     node = Dumbo.Mesh.get_node_by_friendly_name!(device)
+
+    latest_message = Dumbo.Mesh.get_latest_message_by_node(node)
+
+    latest_payload =
+      case latest_message do
+        nil ->
+          Map.new(payload, fn key -> {key, nil} end)
+
+        %Dumbo.Mesh.Message{payload: payload} ->
+          payload
+      end
+
+    Phoenix.PubSub.broadcast!(
+      Dumbo.PubSub,
+      "message",
+      {:message, device, payload, latest_payload}
+    )
 
     {:ok, _} =
       Dumbo.Mesh.create_message(%{
@@ -91,9 +124,10 @@ defmodule Dumbo.Zigbee do
   def state_to_boolean("OFF"), do: false
 
   def set_state(device, state, extra \\ %{}) do
-    publish(
-      [device, "set"],
-      Map.merge(%{"state" => boolean_to_state(state)}, extra)
-    )
+    tell(device, Map.merge(%{"state" => boolean_to_state(state)}, extra))
+  end
+
+  def tell(device, message) do
+    publish([device, "set"], message)
   end
 end

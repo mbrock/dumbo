@@ -7,7 +7,7 @@ defmodule Dumbo.Animation do
     GenServer.start_link(__MODULE__, arg)
   end
 
-  def init({:fade, from, to, duration}) do
+  def init({:fade, from, to, duration, function}) do
     steps = abs(to - from)
 
     if steps == 0 do
@@ -18,34 +18,31 @@ defmodule Dumbo.Animation do
       t1 = t0 + duration * 1000
 
       Logger.info("Starting fade from #{from} to #{to} in #{duration} seconds.")
+      function.(from)
 
       Process.send_after(self(), :tick, step_duration)
 
-      {:ok, {:fading, from, to, t0, t1, step_duration}}
+      {:ok, {:fading, from, to, t0, t1, step_duration, function}}
     end
   end
 
-  def fade(value) do
-    Dumbo.Zigbee.set_state("living-room-ceiling", true, %{brightness: value})
-  end
-
-  def handle_info(:tick, {:fading, from, to, t0, t1, step_duration}) do
+  def handle_info(:tick, {:fading, from, to, t0, t1, step_duration, function}) do
     t = System.system_time(:millisecond)
 
     if t >= t1 do
       Logger.info("Fading to #{to}; done.")
-      fade(to)
+      function.(to)
       {:stop, :normal, :done}
     else
       # Linear interpolation.
       value = round(from + (to - from) * (t - t0) / (t1 - t0))
 
       Logger.info("Fading to #{value}.")
-      fade(value)
+      function.(value)
 
       Process.send_after(self(), :tick, step_duration)
 
-      {:noreply, {:fading, from, to, t0, t1, step_duration}}
+      {:noreply, {:fading, from, to, t0, t1, step_duration, function}}
     end
   end
 end

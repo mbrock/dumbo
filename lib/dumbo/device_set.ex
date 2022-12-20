@@ -130,23 +130,6 @@ defmodule Dumbo.DeviceSet do
     Agent.get(__MODULE__, &Map.get(&1, friendly_name))
   end
 
-  def get_datatable do
-    data =
-      get_simple()
-      |> Enum.map(fn {friendly_name, device} ->
-        %{
-          name: friendly_name,
-          description: device.description
-        }
-      end)
-
-    Kino.DataTable.new(data, name: "Devices", keys: [:name, :description])
-  end
-
-  def get_tree do
-    Kino.Tree.new(get())
-  end
-
   def get_facts(state) do
     for {device, %{"state" => s}} <- state,
         {key, value} <- s,
@@ -169,5 +152,7 @@ defmodule Dumbo.DeviceSet do
         Map.get(&1, friendly_name)
       )
     )
+
+    Dumbo.Mesh.rename_node_by_friendly_name!(friendly_name, new_friendly_name)
   end
 end

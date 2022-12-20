@@ -7,28 +7,58 @@ defmodule Dumbo.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      # Start the Telemetry supervisor
-      DumboWeb.Telemetry,
-      # Start the Ecto repository
-      Dumbo.Repo,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: Dumbo.PubSub},
-      # Start Finch
-      {Finch, name: Dumbo.Finch},
-      # Start the Endpoint (http/https)
-      DumboWeb.Endpoint,
-      Dumbo.DeviceSet,
-      Dumbo.MessageLog,
-      # Dumbo.Automation,
-      {
-        Tortoise.Connection,
-        client_id: Dumbo.Zigbee,
-        handler: {Dumbo.Zigbee, []},
-        server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
-        subscriptions: [{"zigbee2mqtt/#", 0}]
-      }
-    ]
+    zigbee_hub_children =
+      case Application.fetch_env!(:dumbo, :zigbee_hub) do
+        true ->
+          [
+            Dumbo.DeviceSet,
+            Dumbo.MessageLog,
+            Dumbo.Rules.Bathroom,
+            # Dumbo.Automation,
+            {
+              Tortoise.Connection,
+              client_id: Dumbo.Zigbee,
+              handler: {Dumbo.Zigbee, []},
+              server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
+              subscriptions: [{"zigbee2mqtt/#", 0}]
+            }
+          ]
+
+        _ ->
+          []
+      end
+
+    telegram_bot_children =
+      case Application.fetch_env!(:dumbo, :telegram_token) do
+        true ->
+          [
+            {Telegram.Poller,
+             bots: [
+               {Dumbo.TelegramBot,
+                [
+                  token: Application.fetch_env!(:dumbo, :telegram_token),
+                  max_bot_concurrency: 10
+                ]}
+             ]}
+          ]
+
+        false ->
+          []
+      end
+
+    children =
+      [
+        # Start the Telemetry supervisor
+        DumboWeb.Telemetry,
+        # Start the Ecto repository
+        Dumbo.Repo,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: Dumbo.PubSub},
+        # Start Finch
+        {Finch, name: Dumbo.Finch},
+        # Start the Endpoint (http/https)
+        DumboWeb.Endpoint
+      ] ++ zigbee_hub_children ++ telegram_bot_children
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

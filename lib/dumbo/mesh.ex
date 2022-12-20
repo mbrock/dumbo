@@ -77,6 +77,12 @@ defmodule Dumbo.Mesh do
     |> Repo.update()
   end
 
+  def rename_node_by_friendly_name!(friendly_name, new_friendly_name) do
+    node = get_node_by_friendly_name!(friendly_name)
+
+    update_node(node, %{friendly_name: new_friendly_name})
+  end
+
   @doc """
   Deletes a node.
 
@@ -136,6 +142,15 @@ defmodule Dumbo.Mesh do
 
   """
   def get_message!(id), do: Repo.get!(Message, id)
+
+  def get_latest_message_by_node(node) do
+    Repo.one(
+      from m in Message,
+        where: m.node_id == ^node.id,
+        order_by: [desc: m.inserted_at],
+        limit: 1
+    )
+  end
 
   @doc """
   Creates a message.

@@ -10,7 +10,6 @@ defmodule Dumbo.Automation do
 
   def init(_arg) do
     :ok = Phoenix.PubSub.subscribe(Dumbo.PubSub, "device-change")
-
     # Tick every 1/10 second.
     # Process.send_after(self(), :tick, 100)
 

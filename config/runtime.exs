@@ -8,8 +8,8 @@ end
 
 if config_env() != :test do
   config :dumbo,
-    telegram_token: Env.get("TELEGRAM_TOKEN"),
-    zigbee_hub: Env.get("ZIGBEE_HUB") == "true"
+    telegram_token: System.get_env("TELEGRAM_TOKEN"),
+    zigbee_hub: System.get_env("ZIGBEE_HUB") == "true"
 end
 
 # config/runtime.exs is executed for all environments, including

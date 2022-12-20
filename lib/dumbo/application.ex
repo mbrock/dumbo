@@ -42,7 +42,7 @@ defmodule Dumbo.Application do
              ]}
           ]
 
-        false ->
+        _ ->
           []
       end
 

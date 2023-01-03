@@ -63,11 +63,19 @@ COPY config/runtime.exs config/
 COPY rel rel
 RUN mix release
 
+FROM ${RUNNER_IMAGE} as tailscale
+WORKDIR /app
+RUN apt-get update -y && apt-get install -y wget \
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
+ENV TSFILE=tailscale_1.34.1_amd64.tgz
+RUN wget https://pkgs.tailscale.com/stable/${TSFILE} && \
+  tar xzf ${TSFILE} --strip-components=1
+
 # start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
 
-RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales \
+RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales iptables iproute2 \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # Set the locale
@@ -86,9 +94,12 @@ ENV MIX_ENV="prod"
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/dumbo ./
 
-USER nobody
+# Copy binary to production image
+COPY --from=tailscale /app/tailscaled /app/tailscaled
+COPY --from=tailscale /app/tailscale /app/tailscale
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
 
-CMD ["/app/bin/server"]
+CMD ["/app/bin/fly-server"]
 
 # Appended by flyctl
 ENV ECTO_IPV6 true

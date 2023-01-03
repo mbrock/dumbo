@@ -56,7 +56,8 @@ defmodule Dumbo.MixProject do
       {:timescale, "~> 0.0.1-alpha.5"},
       {:ecto_psql_extras, "~> 0.6"},
       {:telegram, github: "visciang/telegram", tag: "0.22.4"},
-      {:hackney, "~> 1.18"}
+      {:hackney, "~> 1.18"},
+      {:wasmex, "~> 0.7.1"}
     ]
   end
 

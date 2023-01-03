@@ -30,13 +30,13 @@ defmodule Dumbo.Application do
 
     telegram_bot_children =
       case Application.fetch_env!(:dumbo, :telegram_token) do
-        true ->
+        token ->
           [
             {Telegram.Poller,
              bots: [
                {Dumbo.TelegramBot,
                 [
-                  token: Application.fetch_env!(:dumbo, :telegram_token),
+                  token: token,
                   max_bot_concurrency: 10
                 ]}
              ]}

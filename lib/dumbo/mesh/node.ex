@@ -7,6 +7,8 @@ defmodule Dumbo.Mesh.Node do
     field :friendly_name, :string
     field :ieee_address, :string
 
+    has_many :messages, Dumbo.Mesh.Message
+
     timestamps(type: :utc_datetime_usec)
   end
 

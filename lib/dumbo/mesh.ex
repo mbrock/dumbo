@@ -127,6 +127,20 @@ defmodule Dumbo.Mesh do
     Repo.all(Message) |> Repo.preload(:node)
   end
 
+  def latest_message_per_node_id do
+    messages =
+      Repo.all(
+        from(m in Message,
+          distinct: [m.node_id],
+          order_by: [asc: m.node_id, desc: m.inserted_at]
+        )
+      )
+
+    Enum.group_by(messages, & &1.node_id)
+    |> Enum.map(fn {node_id, messages} -> {node_id, hd(messages)} end)
+    |> Map.new()
+  end
+
   @doc """
   Gets a single message.
 
